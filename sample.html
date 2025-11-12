@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Modern Landing — Your Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#7c3aed; --muted:#94a3b8; --glass: rgba(255,255,255,0.04);
+      --radius:14px; --max-w:1100px;
+      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:linear-gradient(180deg,#071126 0%, #081427 60%); color:#e6eef8; -webkit-font-smoothing:antialiased;
+      display:flex; align-items:center; justify-content:center; padding:40px 20px;
+      font-size:16px; line-height:1.45
+    }
+    .wrap{width:100%; max-width:var(--max-w)}
+
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#4f46e5);display:flex;align-items:center;justify-content:center;font-weight:800;color:white}
+    nav a{color:var(--muted);text-decoration:none;margin-left:18px}
+    nav a:hover{color:var(--accent)}
+
+    .hero{display:grid;grid-template-columns:1fr 420px;gap:28px;align-items:center}
+    @media (max-width:900px){.hero{grid-template-columns:1fr;}.hero-right{order:-1}}
+
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:var(--radius); padding:28px}
+
+    h1{font-size:34px;margin:0 0 10px}
+    .sub{color:var(--muted);margin-bottom:18px}
+    .cta{display:flex;gap:12px}
+    .btn{background:var(--accent);border:none;padding:12px 16px;border-radius:10px;color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);}
+
+    .features{display:flex;gap:12px;margin-top:20px}
+    .feature{background:var(--glass);padding:12px;border-radius:10px;flex:1}
+    .feature strong{display:block;color:white}
+
+    .hero-right{display:flex;flex-direction:column;gap:12px}
+    .mock{background:linear-gradient(180deg,#071233, #08132b); border-radius:12px;padding:12px;box-shadow:0 10px 30px rgba(2,6,23,0.6)}
+    .mock img{width:100%;border-radius:8px;display:block}
+
+    section{margin-top:26px}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media (max-width:900px){.grid-3{grid-template-columns:1fr}}
+
+    footer{margin-top:30px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}
+
+    /* small utilities */
+    .pill{display:inline-block;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);color:var(--muted);font-size:13px}
+    input,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:6px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:650px){.form-grid{grid-template-columns:1fr}}
+
+    .card-h{display:flex;align-items:center;justify-content:space-between}
+    .small{font-size:13px;color:var(--muted)}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">ML</div>
+        <div>
+          <div style="font-weight:700">Modern Landing</div>
+          <div class="small">Clean, responsive HTML template</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#features">Features</a>
+        <a href="#showcase">Showcase</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main class="hero">
+      <div>
+        <div class="card">
+          <h1>Beautiful, minimal landing page template</h1>
+          <p class="sub">A small, responsive HTML design you can drop into any project. Built with semantic markup, a tiny CSS footprint, and a polished UI ready for customization.</p>
+          <div class="cta">
+            <button class="btn" onclick="downloadHTML()">Download HTML</button>
+            <button class="btn ghost" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Get in touch</button>
+          </div>
+
+          <div class="features">
+            <div class="feature">
+              <strong>Responsive</strong>
+              <small class="small">Looks great on mobile and desktop.</small>
+            </div>
+            <div class="feature">
+              <strong>Lightweight</strong>
+              <small class="small">No external frameworks required.</small>
+            </div>
+            <div class="feature">
+              <strong>Editable</strong>
+              <small class="small">Easy to adapt to your brand.</small>
+            </div>
+          </div>
+        </div>
+
+        <section id="features">
+          <div class="card card-h" style="margin-top:14px">
+            <div>
+              <h3 style="margin:0">Design highlights</h3>
+              <div class="small">Cards, grid gallery, and a contact form included.</div>
+            </div>
+            <div class="pill">v1.0</div>
+          </div>
+
+          <div class="grid-3" style="margin-top:12px">
+            <div class="card">
+              <h4 style="margin-top:0">Cards</h4>
+              <p class="small">Modular cards with soft shadows and rounded corners.</p>
+            </div>
+            <div class="card">
+              <h4 style="margin-top:0">Gallery</h4>
+              <p class="small">Simple responsive gallery grid for screenshots.</p>
+            </div>
+            <div class="card">
+              <h4 style="margin-top:0">Contact</h4>
+              <p class="small">A minimal contact form with validation.
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <aside class="hero-right">
+        <div class="mock card">
+          <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='800' height='500'><rect rx='8' width='100%' height='100%' fill='%230b1220'/><text x='50%' y='50%' fill='%237c3aed' font-size='28' font-family='Inter' dominant-baseline='middle' text-anchor='middle'>Project preview</text></svg>" alt="mock">
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <div class="pill">HTML</div>
+            <div class="pill">CSS</div>
+            <div class="pill">Vanilla JS</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 style="margin:0">Quick code</h4>
+          <pre style="background:rgba(0,0,0,0.12);padding:12px;border-radius:8px;overflow:auto;color:#dbeafe;font-size:13px">git clone &lt;repo-url&gt;  
+cd repo-name 
+subl .</pre>
+        </div>
+
+      </aside>
+    </main>
+
+    <section id="showcase">
+      <h3 style="margin-bottom:8px">Showcase</h3>
+      <div class="grid-3">
+        <div class="card"><img src="https://picsum.photos/seed/1/600/400" alt="img" style="width:100%;border-radius:8px"></div>
+        <div class="card"><img src="https://picsum.photos/seed/2/600/400" alt="img" style="width:100%;border-radius:8px"></div>
+        <div class="card"><img src="https://picsum.photos/seed/3/600/400" alt="img" style="width:100%;border-radius:8px"></div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h3 style="margin-top:18px">Contact</h3>
+      <div class="card" style="margin-top:10px">
+        <form id="contactForm" onsubmit="submitForm(event)">
+          <div class="form-grid">
+            <div>
+              <label for="name">Name</label>
+              <input id="name" name="name" required placeholder="Your name">
+            </div>
+            <div>
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required placeholder="you@example.com">
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" rows="4" required placeholder="Say hi..."></textarea>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+            <button type="submit" class="btn">Send message</button>
+            <button type="button" class="btn ghost" onclick="document.getElementById('contactForm').reset()">Reset</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer>
+      <div class="small">© " + new Date().getFullYear() + " Modern Landing</div>
+      <div class="small">Built with ❤️ — Open in Sublime or your browser</div>
+    </footer>
+  </div>
+
+  <script>
+    function downloadHTML(){
+      const blob = new Blob([document.documentElement.outerHTML], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'index.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    function submitForm(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      alert('Thanks, '+name+' — this is a demo form. Copy the template and wire it to your backend or email handler.');
+      document.getElementById('contactForm').reset();
+    }
+  </script>
+</body>
+</html>
