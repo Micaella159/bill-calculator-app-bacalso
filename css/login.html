@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login — Electric Bill</title>
+<style>
+:root{--primary:#007bff;--muted:#6b7280;--card:#fff;--radius:12px}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui;min-height:100vh;background:linear-gradient(180deg,#f4f7fb,#eef4ff);display:flex;align-items:center;justify-content:center;padding:24px}
+.container{width:100%;max-width:420px;background:var(--card);padding:26px;border-radius:16px;box-shadow:0 12px 40px rgba(12,24,48,.08);animation:pop .4s ease}
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.logo{width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#005fcc);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+h2{margin:0 0 6px 0}
+.lead{color:var(--muted);font-size:14px;margin-bottom:18px}
+.form{display:flex;flex-direction:column;gap:10px}
+.input{padding:12px;border-radius:10px;border:1px solid #e6eefc;font-size:15px}
+.btn{padding:12px;border-radius:10px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;transition:transform .14s}
+.btn:active{transform:translateY(1px)}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px}
+.link{color:var(--primary);text-decoration:none}
+.note{font-size:13px;color:var(--muted);margin-top:12px}
+
+/* small screens */
+@media (max-width:420px){
+  .container{padding:18px}
+}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <div class="brand"><div class="logo">EB</div><div><h2>Welcome back</h2><div class="lead">Sign in to access your dashboard</div></div></div>
+
+    <div class="form" id="form">
+      <input id="email" class="input" type="email" placeholder="Email" autocomplete="email">
+      <input id="password" class="input" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="btn" onclick="login()">Sign in</button>
+
+      <div class="row">
+        <label style="display:flex;align-items:center;gap:8px"><input id="remember" type="checkbox"> Remember</label>
+        <a class="link" href="register.html">Create account</a>
+      </div>
+      <div class="note">Demo app — sign in will accept any non-empty credentials and route to dashboard.</div>
+    </div>
+  </div>
+
+<script>
+function login(){
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+  if(!email || !password) return alert('Please enter email and password.');
+  // store minimal login flag
+  sessionStorage.setItem('loggedIn','true');
+  sessionStorage.setItem('userEmail',email);
+  location.href='dashboard.html';
+}
+</script>
+</body>
+</html>

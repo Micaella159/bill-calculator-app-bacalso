@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>History — Electric Bill</title>
+<style>
+:root{--primary:#007bff;--muted:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,#f4f7fb,#eef4ff);padding:18px;min-height:100vh}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.container{max-width:900px;margin:0 auto}
+.list{display:flex;flex-direction:column;gap:12px}
+.item{background:white;padding:14px;border-radius:12px;box-shadow:0 8px 30px rgba(12,24,60,.04);display:flex;justify-content:space-between;align-items:center}
+.meta{color:var(--muted);font-size:13px}
+.controls{display:flex;gap:8px}
+.btn{padding:10px 12px;border-radius:10px;border:none;background:var(--primary);color:white;cursor:pointer}
+.ghost{background:transparent;border:1px solid rgba(12,24,60,.06);color:var(--muted)}
+.empty{padding:30px;border-radius:12px;background:white;text-align:center;color:var(--muted);box-shadow:0 8px 30px rgba(12,24,60,.03)}
+@media(max-width:600px){.item{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h2 style="margin:0">Calculation history</h2>
+        <div class="meta" id="count"></div>
+      </div>
+      <div class="controls">
+        <button class="btn" onclick="exportCSV()">Export CSV</button>
+        <button class="ghost" onclick="clearAll()">Clear all</button>
+        <button style="background:transparent;border:none;color:var(--primary);cursor:pointer" onclick="location.href='dashboard.html'">Back</button>
+      </div>
+    </div>
+
+    <div id="list" class="list"></div>
+  </div>
+
+<script>
+function format(v){return Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function render(){
+  const history = JSON.parse(localStorage.getItem('history')||'[]').slice().reverse();
+  document.getElementById('count').textContent = history.length + ' saved entries';
+  const list = document.getElementById('list');
+  if(history.length===0){list.innerHTML='<div class="empty">No saved calculations yet. Go to Calculator to create one.</div>';return}
+  list.innerHTML = history.map((h,i)=>`
+    <div class="item">
+      <div>
+        <div style="font-weight:700">₱${format(h.total)}</div>
+        <div class="meta">${h.kwh} kWh • ₱${format(h.rate)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="meta">${h.date}</div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end">
+          <button onclick="recalc(${i})" style="padding:8px;border-radius:8px;border:1px solid #eef6ff;background:transparent;cursor:pointer">Re-calc</button>
+          <button onclick="deleteItem(${i})" style="padding:8px;border-radius:8px;border:none;background:#ff4666;color:white;cursor:pointer">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function recalc(idx){
+  const history = JSON.parse(localStorage.getItem('history')||'[]');
+  const item = history[ history.length -1 - idx ]; // reverse mapping
+  if(!item) return;
+  // prefill calculator and navigate
+  localStorage.setItem('prefill', JSON.stringify(item));
+  location.href = 'calculator.html';
+}
+function deleteItem(idx){
+  if(!confirm('Delete this entry?')) return;
+  const history = JSON.parse(localStorage.getItem('history')||'[]');
+  history.splice(history.length -1 - idx,1);
+  localStorage.setItem('history',JSON.stringify(history));
+  render();
+}
+function clearAll(){
+  if(!confirm('Clear all saved calculations?')) return;
+  localStorage.removeItem('history');
+  render();
+}
+function exportCSV(){
+  const history = JSON.parse(localStorage.getItem('history')||'[]');
+  if(history.length===0) return alert('No data to export');
+  const rows = [['date','kwh','rate','total'],...history.map(h=>[h.date,h.kwh,h.rate,h.total])];
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv],{type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'electric_history.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+render();
+</script>
+</body>
+</html>

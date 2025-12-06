@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Profile — Electric Bill</title>
+<style>
+:root{--primary:#007bff;--muted:#6b7280}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,#f4f7fb,#eef4ff);padding:20px;min-height:100vh}
+.container{max-width:720px;margin:20px auto;background:white;padding:18px;border-radius:12px;box-shadow:0 12px 40px rgba(12,24,60,.06)}
+.row{display:flex;gap:12px;align-items:center}
+.avatar{width:84px;height:84px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#005fcc);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:20px}
+.form{display:grid;gap:10px;margin-top:12px}
+.input{padding:12px;border-radius:10px;border:1px solid #eef6ff}
+.btn{padding:12px;border-radius:10px;border:none;background:var(--primary);color:white;cursor:pointer}
+.small{font-size:13px;color:var(--muted)}
+@media(max-width:560px){.row{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:800">Profile</div>
+      <div><button style="background:transparent;border:none;color:var(--primary);cursor:pointer" onclick="location.href='dashboard.html'">Back</button></div>
+    </div>
+
+    <div style="display:flex;gap:14px;align-items:center;margin-top:12px" class="row">
+      <div class="avatar" id="avatar">EB</div>
+      <div>
+        <div id="displayName" style="font-weight:700">Your Name</div>
+        <div class="small" id="displayEmail">email@example.com</div>
+      </div>
+    </div>
+
+    <div class="form" style="margin-top:14px">
+      <input id="name" class="input" placeholder="Full name">
+      <input id="email" class="input" placeholder="Email">
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="save()">Save</button>
+        <button style="background:transparent;border:1px solid #eef6ff;padding:10px;border-radius:10px;cursor:pointer" onclick="resetProfile()">Reset</button>
+      </div>
+      <div class="small">Profile is stored locally in this browser only.</div>
+    </div>
+  </div>
+
+<script>
+function load(){
+  const profile = JSON.parse(localStorage.getItem('profile')||'{}');
+  const name = profile.name||'Your Name';
+  const email = profile.email||'email@example.com';
+  document.getElementById('name').value = profile.name||'';
+  document.getElementById('email').value = profile.email||'';
+  document.getElementById('displayName').textContent = name;
+  document.getElementById('displayEmail').textContent = email;
+  document.getElementById('avatar').textContent = name.split(' ').map(s=>s[0]).slice(0,2).join('') || 'EB';
+}
+function save(){
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim();
+  if(!name || !email) return alert('Please fill both fields.');
+  localStorage.setItem('profile', JSON.stringify({name,email}));
+  load();
+  alert('Profile saved locally.');
+}
+function resetProfile(){
+  if(!confirm('Reset profile to default?')) return;
+  localStorage.removeItem('profile');
+  load();
+}
+load();
+
+// If calculator prefill is present, allow navigation back (used by history -> recalc)
+if(localStorage.getItem('prefill')){
+  // nothing here; prefill handled in calculator
+}
+</script>
+
+<!-- Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Your configuration -->
+<script src="../js/supabase-config.js"></script>
+<script src="../js/db-functions.js"></script>
+</body>
+</html>
