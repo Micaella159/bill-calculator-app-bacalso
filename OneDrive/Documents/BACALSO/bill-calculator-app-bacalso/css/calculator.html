@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Calculator — Electric Bill</title>
+<style>
+:root{--primary:#007bff;--muted:#6b7280}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,#f4f7fb,#eef4ff);display:flex;align-items:center;justify-content:center;padding:18px}
+.card{background:white;padding:22px;border-radius:14px;box-shadow:0 18px 40px rgba(12,24,60,.06);width:100%;max-width:720px;display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+@media(max-width:900px){.card{grid-template-columns:1fr}}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.h-title{font-weight:800;font-size:18px}
+.form{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px}
+.input{padding:12px;border-radius:10px;border:1px solid #e6eefc;font-size:15px;width:100%}
+.btn{padding:12px;border-radius:10px;border:none;background:var(--primary);color:white;font-weight:700;cursor:pointer}
+.preview{background:linear-gradient(180deg,#ffffff,#f8fbff);padding:16px;border-radius:12px;border:1px solid #eef6ff}
+.result-amount{font-weight:800;font-size:28px;color:var(--primary);margin-top:8px}
+.small{font-size:13px;color:var(--muted)}
+.history-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;max-height:280px;overflow:auto;padding-right:6px}
+.item{padding:10px;border-radius:10px;background:white;border:1px solid #f0f6ff;display:flex;justify-content:space-between;align-items:center}
+.fade{animation:fade .45s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+  <div class="card fade" role="main">
+    <div>
+      <div class="header">
+        <div>
+          <div class="h-title">Electric Bill Calculator</div>
+          <div class="small">Enter kWh used and price per kWh to estimate.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="quickExample()">Quick example</button>
+          <button style="background:transparent;border:none;color:var(--primary);cursor:pointer" onclick="location.href='dashboard.html'">Back</button>
+        </div>
+      </div>
+
+      <div class="form" style="margin-top:8px">
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <label class="small">Kilowatt-hours (kWh)</label>
+            <input id="kwh" class="input" type="number" step="any" placeholder="e.g. 350">
+          </div>
+          <div style="width:160px">
+            <label class="small">Rate (₱ / kWh)</label>
+            <input id="rate" class="input" type="number" step="any" placeholder="e.g. 9.50">
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:center">
+          <button class="btn" onclick="calculate()">Calculate</button>
+          <button onclick="saveNow()" style="background:transparent;border:1px solid #eef6ff;padding:10px;border-radius:10px;cursor:pointer">Save result</button>
+          <button onclick="clearFields()" style="background:transparent;border:none;color:var(--muted);cursor:pointer">Reset</button>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="small">Breakdown</div>
+        <div style="display:flex;gap:12px;margin-top:10px;flex-wrap:wrap">
+          <div style="padding:12px;border-radius:10px;background:#fff;border:1px solid #f2f8ff">
+            <div class="small">Usage</div>
+            <div id="showKwh" style="font-weight:700">— kWh</div>
+          </div>
+          <div style="padding:12px;border-radius:10px;background:#fff;border:1px solid #f2f8ff">
+            <div class="small">Rate</div>
+            <div id="showRate" style="font-weight:700">— ₱</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside>
+      <div class="preview">
+        <div class="small">Estimated total</div>
+        <div class="result-amount" id="totalDisplay">₱0.00</div>
+        <div class="small" style="margin-top:6px" id="calcNote">No calculation yet</div>
+
+        <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-weight:700">Saved history</div>
+          <div class="small"><button onclick="location.href='result-history.html'" style="background:transparent;border:none;color:var(--primary);cursor:pointer">Open</button></div>
+        </div>
+
+        <div class="history-list" id="historyList" aria-live="polite"></div>
+      </div>
+    </aside>
+  </div>
+
+<script>
+function format(v){return Number(v).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+function calculate(){
+  const k = parseFloat(document.getElementById('kwh').value);
+  const r = parseFloat(document.getElementById('rate').value);
+  if(isNaN(k) || isNaN(r)) return alert('Please enter both kWh and rate.');
+  const total = k * r;
+  document.getElementById('totalDisplay').textContent = '₱' + format(total);
+  document.getElementById('showKwh').textContent = `${k} kWh`;
+  document.getElementById('showRate').textContent = `₱${format(r)}`;
+  document.getElementById('calcNote').textContent = `Calculated ${new Date().toLocaleString()}`;
+  // preview push (not auto save)
+  window.latestCalc = {kwh:k,rate:r,total,date:new Date().toLocaleString()};
+}
+
+function saveNow(){
+  if(!window.latestCalc) return alert('Please calculate before saving.');
+  const history = JSON.parse(localStorage.getItem('history')||'[]');
+  history.push(window.latestCalc);
+  localStorage.setItem('history',JSON.stringify(history));
+  loadHistory();
+  alert('Saved to history.');
+}
+
+function loadHistory(){
+  const list = document.getElementById('historyList');
+  const history = JSON.parse(localStorage.getItem('history')||'[]').slice(-6).reverse();
+  if(history.length===0){list.innerHTML='<div class="small">No saved calculations yet.</div>';return}
+  list.innerHTML = history.map(h=>`<div class="item"><div><div style="font-weight:700">₱${format(h.total)}</div><div class="small">${h.kwh} kWh • ₱${format(h.rate)}</div></div><div class="small">${h.date}</div></div>`).join('');
+}
+
+function quickExample(){document.getElementById('kwh').value=350;document.getElementById('rate').value=9.5;calculate()}
+
+function clearFields(){document.getElementById('kwh').value='';document.getElementById('rate').value='';document.getElementById('totalDisplay').textContent='₱0.00';document.getElementById('showKwh').textContent='— kWh';document.getElementById('showRate').textContent='— ₱';window.latestCalc=null}
+
+loadHistory();
+</script>
+
+<!-- Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Your configuration -->
+<script src="../js/supabase-config.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+// Check authentication on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await redirectIfNotAuthenticated();
+});
+
+async function saveNow(){
+  if(!window.latestCalc) return alert('Please calculate before saving.');
+  
+  const user = await getCurrentUser();
+  if (!user) {
+    alert('Please log in to save calculations.');
+    return;
+  }
+  
+  const submitBtn = document.querySelector('button[onclick="saveNow()"]');
+  const originalValue = submitBtn.textContent;
+  submitBtn.textContent = 'Saving...';
+  submitBtn.disabled = true;
+  
+  try {
+    const { data, error } = await supabaseClient
+      .from('calculations')
+      .insert([{
+        user_id: user.id,
+        month: new Date().toLocaleDateString(),
+        power_consumption: window.latestCalc.kwh,
+        cost_per_kwh: window.latestCalc.rate,
+        result: window.latestCalc.total
+      }]);
+    
+    if (error) {
+      alert('Error saving calculation: ' + error.message);
+      submitBtn.textContent = originalValue;
+      submitBtn.disabled = false;
+      return;
+    }
+    
+    await logSaveCalculation(data[0].id, window.latestCalc);
+    alert('Calculation saved to Supabase!');
+    loadHistory();
+    submitBtn.textContent = originalValue;
+    submitBtn.disabled = false;
+  } catch (error) {
+    alert('Error saving calculation: ' + error.message);
+    submitBtn.textContent = originalValue;
+    submitBtn.disabled = false;
+  }
+}
+</script>
+
+<!-- Supabase JS library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Your configuration -->
+<script src="../js/supabase-config.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/history-manager.js"></script>
+<script>
+// Additional page logging
+document.addEventListener('DOMContentLoaded', async () => {
+  await logPageView('Calculator');
+});
+</script>
+</body>
+</html>

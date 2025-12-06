@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>System History — Electric Bill</title>
+<style>
+:root{--primary:#007bff;--muted:#6b7280;--danger:#ff4666}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui;background:linear-gradient(180deg,#f4f7fb,#eef4ff);padding:18px;min-height:100vh}
+.container{max-width:1200px;margin:0 auto}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:white;padding:18px;border-radius:12px;box-shadow:0 8px 30px rgba(12,24,60,.04)}
+.header h1{margin:0;font-size:24px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:10px 14px;border-radius:10px;border:none;background:var(--primary);color:white;cursor:pointer;font-weight:600}
+.btn.danger{background:var(--danger)}
+.btn.secondary{background:transparent;border:1px solid #eef6ff;color:var(--primary)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.stat-card{background:white;padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(12,24,60,.04)}
+.stat-value{font-size:28px;font-weight:800;color:var(--primary)}
+.stat-label{font-size:13px;color:var(--muted);margin-top:4px}
+.filters{background:white;padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(12,24,60,.04);margin-bottom:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.input{padding:10px;border-radius:10px;border:1px solid #eef6ff;font-size:14px}
+.history-table{background:white;border-radius:12px;box-shadow:0 8px 30px rgba(12,24,60,.04);overflow:auto}
+table{width:100%;border-collapse:collapse}
+th{background:#f8fbff;padding:14px;text-align:left;font-weight:700;font-size:13px;color:var(--muted);border-bottom:1px solid #eef6ff}
+td{padding:14px;border-bottom:1px solid #eef6ff;font-size:13px}
+tr:hover{background:#f8fbff}
+.action-badge{display:inline-block;padding:4px 8px;border-radius:6px;background:#e6f2ff;color:var(--primary);font-weight:600;font-size:12px}
+.empty{text-align:center;padding:40px;color:var(--muted)}
+@media(max-width:900px){.header{flex-direction:column;align-items:flex-start;gap:12px}.stats{grid-template-columns:1fr}.controls{width:100%;justify-content:flex-end}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>System History</h1>
+      <div class="controls">
+        <button class="btn secondary" onclick="location.href='dashboard.html'">Back</button>
+        <button class="btn" onclick="exportHistory()">Export CSV</button>
+        <button class="btn danger" onclick="clearHistoryConfirm()">Clear History</button>
+      </div>
+    </div>
+
+    <div class="stats" id="statsContainer">
+      <div class="stat-card">
+        <div class="stat-value" id="totalActions">0</div>
+        <div class="stat-label">Total Actions</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="calculationCount">0</div>
+        <div class="stat-label">Calculations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="loginCount">0</div>
+        <div class="stat-label">Logins</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="pageViewCount">0</div>
+        <div class="stat-label">Pages Viewed</div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <label style="font-size:13px;color:var(--muted)">Filter by Action:</label>
+      <select id="actionFilter" class="input" onchange="loadHistory()">
+        <option value="">All Actions</option>
+        <option value="login">Login</option>
+        <option value="logout">Logout</option>
+        <option value="calculate">Calculation</option>
+        <option value="save_calculation">Save Calculation</option>
+        <option value="delete_calculation">Delete Calculation</option>
+        <option value="update_profile">Update Profile</option>
+        <option value="page_view">Page View</option>
+        <option value="error">Error</option>
+      </select>
+      <input type="date" id="startDate" class="input" placeholder="Start Date" onchange="loadHistory()">
+      <input type="date" id="endDate" class="input" placeholder="End Date" onchange="loadHistory()">
+    </div>
+
+    <div class="history-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>Description</th>
+            <th>Page</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="4" class="empty">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/history-manager.js"></script>
+<script>
+// Check authentication on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = await redirectIfNotAuthenticated();
+  if (session) {
+    await logPageView('System History');
+    await loadHistory();
+    await loadStatistics();
+  }
+});
+
+async function loadHistory() {
+  try {
+    const actionFilter = document.getElementById('actionFilter').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    const filters = {};
+    if (actionFilter) filters.action = actionFilter;
+    if (startDate) filters.startDate = startDate + 'T00:00:00Z';
+    if (endDate) filters.endDate = endDate + 'T23:59:59Z';
+
+    const history = await historyManager.getFilteredHistory(filters);
+
+    const tbody = document.getElementById('historyBody');
+    if (history.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="empty">No history records found</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = history.map(record => `
+      <tr>
+        <td>${new Date(record.timestamp).toLocaleString()}</td>
+        <td><span class="action-badge">${record.action}</span></td>
+        <td>${record.description}</td>
+        <td><small>${new URL(record.page_url).pathname}</small></td>
+      </tr>
+    `).join('');
+  } catch (error) {
+    console.error('Error loading history:', error);
+    document.getElementById('historyBody').innerHTML = '<tr><td colspan="4" class="empty">Error loading history</td></tr>';
+  }
+}
+
+async function loadStatistics() {
+  try {
+    const stats = await historyManager.getStatistics();
+    if (!stats) return;
+
+    document.getElementById('totalActions').textContent = stats.total_actions;
+    document.getElementById('calculationCount').textContent = stats.actions_by_type['calculate'] || 0;
+    document.getElementById('loginCount').textContent = stats.actions_by_type['login'] || 0;
+    document.getElementById('pageViewCount').textContent = stats.actions_by_type['page_view'] || 0;
+  } catch (error) {
+    console.error('Error loading statistics:', error);
+  }
+}
+
+async function exportHistory() {
+  try {
+    await historyManager.exportToCSV(30);
+  } catch (error) {
+    console.error('Error exporting history:', error);
+    alert('Error exporting history');
+  }
+}
+
+async function clearHistoryConfirm() {
+  if (!confirm('Are you sure you want to clear all your history? This action cannot be undone.')) return;
+
+  try {
+    const success = await historyManager.clearSupabaseHistory();
+    if (success) {
+      historyManager.clearLocalHistory();
+      alert('History cleared successfully');
+      await loadHistory();
+      await loadStatistics();
+    } else {
+      alert('Error clearing history');
+    }
+  } catch (error) {
+    console.error('Error clearing history:', error);
+    alert('Error clearing history');
+  }
+}
+
+async function handleLogout() {
+  const success = await signOut();
+  if (success) {
+    window.location.href = 'login.html';
+  } else {
+    alert('Error logging out. Please try again.');
+  }
+}
+</script>
+</body>
+</html>
